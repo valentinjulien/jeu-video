@@ -1,0 +1,22 @@
+import pygame
+
+class Projectile(pygame.sprite.Sprite):
+    def __init__(self, player):
+        super(). __init__()
+        self.velocity = 5
+        self.player = player
+        self.image = pygame.image.load("grenade (1).jpg")
+        self.rect = self.image.get_rect()
+        self.rect.x = player.rect.x + 50
+        self.rect.y = player.rect.y + 50
+
+    def remove(self):
+        self.player.all_projectiles.remove(self)
+
+    def move(self):
+        self.rect.x += self.velocity
+        for monster in self.player.game.check_collision(self, self.player.game.all_monsters):
+            self.remove()
+            monster.damage(self.player.attack)
+        if self.rect.x >1500:
+            self.remove()
