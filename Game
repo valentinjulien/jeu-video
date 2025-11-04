@@ -1,0 +1,96 @@
+from tkinter import *
+from tkinter import messagebox
+from urllib import response
+
+from player import Player
+from monster import Melenchon, Pecresse, Zemmour, Lepen, Hidalgo
+
+import pygame
+
+class Game:
+    def __init__(self):
+        self.is_playing = False
+        self.all_players = pygame.sprite.Group()
+        self.player = Player(self)
+        self.all_players.add(self.player)
+        self.all_monsters = pygame.sprite.Group()
+        self.score = 0
+        self.pressed = {}
+
+    def start(self):
+        self.is_playing =True
+        self.spawn_monster()
+
+    def game_over(self):
+        mbx = messagebox.askquestion("Game Over",
+                                     "Voulez-vous recommencer ?")
+        if mbx == "yes":
+            self.all_monsters = pygame.sprite.Group()
+            self.player.health = self.player.max_health
+            self.is_playing = True
+            self.score = 0
+            self.spawn_monster()
+        if mbx == "no":
+            self.all_monsters = pygame.sprite.Group()
+            self.player.health = self.player.max_health
+            self.is_playing = False
+            self.score = 0
+
+    def update(self, screen):
+        font = pygame.font.SysFont("monospace", 16)
+        score_text = font.render(f"Score : {self.score}", 1, (0, 0, 0))
+        screen.blit(score_text, (20, 20))
+        screen.blit(self.player.image, self.player.rect)
+        self.player.update_health_bar(screen)
+
+        for projectile in self.player.all_projectiles:
+            projectile.move()
+
+        for monster in self.all_monsters:
+            monster.forward()
+            monster.update_health_bar(screen)
+
+        self.player.all_projectiles.draw(screen)
+
+        self.all_monsters.draw(screen)
+
+        print(self.pressed)
+
+        if self.pressed.get(pygame.K_RIGHT) and self.player.rect.x < screen.get_width():
+            self.player.move_right()
+        elif self.pressed.get(pygame.K_LEFT) and self.player.rect.x > 0:
+            self.player.move_left()
+        print(self.player.rect.x)
+        pygame.display.flip()
+
+        if self.score >= 800:
+            messagebox.showinfo("Victoire", "Vous êtes devenu le nouveaux président de la République Francaise.")
+            mbx1 = messagebox.askquestion("Victoire", "Voulez-vous recommencer ?")
+            if mbx1 == "yes":
+                self.all_monsters = pygame.sprite.Group()
+                self.player.health = self.player.max_health
+                self.is_playing = True
+                self.score = 0
+                self.spawn_monster()
+            if mbx1 == "no":
+                self.all_monsters = pygame.sprite.Group()
+                self.player.health = self.player.max_health
+                self.is_playing = False
+                self.score = 0
+
+
+
+    def check_collision(self, sprite, group):
+        return pygame.sprite.spritecollide(sprite, group, False, pygame.sprite.collide_mask)
+
+    def spawn_monster(self):
+        monster = Melenchon(self)
+        self.all_monsters.add(monster)
+        monster = Pecresse(self)
+        self.all_monsters.add(monster)
+        monster = Zemmour(self)
+        self.all_monsters.add(monster)
+        monster = Lepen(self)
+        self.all_monsters.add(monster)
+        monster = Hidalgo(self)
+        self.all_monsters.add(monster)
